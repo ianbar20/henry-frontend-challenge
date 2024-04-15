@@ -1,4 +1,4 @@
-# Todo list application
+# Reservation Application
 
 written in React, includes tailwindCSS for styling and fontawesome for icons. Unit testing with jest and react-testing-library.
 The data is hardcoded to local storage. I will hold off on a lengthy explanation of my choices, as I understand a code explanation is part of the the next interview.
