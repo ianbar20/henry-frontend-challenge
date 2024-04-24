@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { formatTime, formatDate, timeToMinutes } from "../../utils/dateAndTime";
-const Provider = ({ id, schedule, addProviderAvailability }) => {
+import { useMutation, useQuery } from "@apollo/client";
+import { GET_PROVIDER, UPDATE_PROVIDER_AVAILABILITY } from "../../client/client";
+
+const Provider = ({ id }) => {
   const [date, setDate] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
-
+  
   const now = new Date();
   now.setHours(24, 0, 0, 0); // Set the time to the start of the next day
   const minDate = now.toISOString().split('T')[0];
@@ -12,6 +15,8 @@ const Provider = ({ id, schedule, addProviderAvailability }) => {
   const minutes = now.getMinutes().toString().padStart(2, '0');
   const minTime = date === minDate ? `${hours}:${minutes}` : "00:00";
 
+  const { data: providerData, loading, error } = useQuery(GET_PROVIDER, { variables: { id } });
+  const [addProviderAvailabilityMutation] = useMutation(UPDATE_PROVIDER_AVAILABILITY);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -21,7 +26,7 @@ const Provider = ({ id, schedule, addProviderAvailability }) => {
     const newEndTime = timeToMinutes(endTime);
 
     // Check for overlapping time slots
-    const isOverlap = schedule.some(slot => {
+    const isOverlap = providerData.provider.schedule.some(slot => {
       if (slot.date !== date) return false; // If the dates are not the same, there's no overlap
 
       const existingStartTime = timeToMinutes(slot.startTime);
@@ -37,11 +42,14 @@ const Provider = ({ id, schedule, addProviderAvailability }) => {
       return;
     }
 
-    addProviderAvailability(id, date, startTime, endTime);
+    addProviderAvailabilityMutation({ variables: { providerId: id, date, startTime, endTime } });
     setDate('');
     setStartTime('');
     setEndTime('');
   };
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error :(</p>;
 
   return (
     <div className="flex items-center justify-center h-screen bg-gradient-to-b from-gray-100 to-gray-500">
@@ -50,7 +58,7 @@ const Provider = ({ id, schedule, addProviderAvailability }) => {
         <h2 className="text-2xl font-bold text-center">List new work availability</h2>
         <p className='text-sm text-red-500 mb-6 text-center'>please note, availability must be submitted at least 24 hours in advance.</p>
         <ul>
-          {schedule
+          {providerData.provider.schedule
             .filter(slot => new Date(slot.date + 'T' + slot.startTime) > new Date()) // Filter out past slots
             .map((slot, index) => {
               const formattedDate =  formatDate(slot.date);

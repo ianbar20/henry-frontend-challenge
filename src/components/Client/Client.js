@@ -1,10 +1,18 @@
 import TimeDropdown from "../TimeDropdown/TimeDropdown";
 import React, { useState, useEffect } from "react";
 import { formatDate, formatTime, addMinutes } from "../../utils/dateAndTime";
+import { CONFIRM_RESERVATION, RESERVE_SLOT, GET_PROVIDERS } from "../../client/client";
+import { useMutation, useQuery } from "@apollo/client";
 
-const Client = ({ id, providers, reserveSlot, confirmSlot }) => {
+const Client = ({ id }) => {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [reservedSlot, setReservedSlot] = useState(JSON.parse(localStorage.getItem('reservedSlot')) || null);
+
+  const { data: providers, loading, error } = useQuery(GET_PROVIDERS);
+
+  // const { data: clientData, loading, error } = useQuery(GET_CLIENT, { variables: { id } });
+  const [reserveSlotMutation] = useMutation(RESERVE_SLOT);
+  const [confirmSlotMutation] = useMutation(CONFIRM_RESERVATION);
 
   useEffect(() => {
     localStorage.setItem('reservedSlot', JSON.stringify(reservedSlot));
@@ -36,18 +44,21 @@ const Client = ({ id, providers, reserveSlot, confirmSlot }) => {
   };
 
   const handleConfirmButtonClick = () => {
-    confirmSlot(id, reservedSlot);
+    confirmSlotMutation({ variables: { clientId: id, slot: reservedSlot } });
     setReservedSlot(null);
   };
 
   const handleReserveButtonClick = () => {
-    const slotWithTimeStamp = { ...selectedSlot, timestamp: new Date() }
-    reserveSlot(id, slotWithTimeStamp);
+    const slotWithTimeStamp = { ...selectedSlot, timestamp: new Date().toISOString() };
+    reserveSlotMutation({ variables: { clientId: id, slot: slotWithTimeStamp } });
     setReservedSlot(slotWithTimeStamp);
     setSelectedSlot(null);
   };
 
   const confirmedSlots = providers.flatMap(provider => provider.confirmedSlots || []).filter(slot => slot.clientId === id);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error :(</p>;
 
   return (
     <div className="flex items-center justify-center h-screen bg-gradient-to-b from-gray-100 to-gray-500">
