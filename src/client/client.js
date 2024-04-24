@@ -9,14 +9,26 @@ export const client = new ApolloClient({
 // Define your GraphQL types
 export const typeDefs = gql`
   type Provider {
-    id: ID!
-    schedule: [String!]!
+    id: String!
+    schedule: [Schedule!]!
   }
 
   type Client {
-    id: ID!
-    reservations: [String!]!
+    id: String!
+    reservations: [Reservation!]!
   }
+
+  type Schedule {
+    date: String!
+    startTime: String!
+    endTime: String!
+  }
+
+  type Reservation {
+    providerId: String!
+    slot: String!
+  }
+  
 `;
 
 // Define your GraphQL queries
