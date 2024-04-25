@@ -35,8 +35,8 @@ const App = () => {
         const reservedSlot = client.reservedSlot;
         if (reservedSlot) {
           const slotTime = new Date(reservedSlot.timestamp);
-          slotTime.setMinutes(slotTime.getMinutes() + TIMEOUT_MINUTES); 
-          
+          slotTime.setMinutes(slotTime.getMinutes() + TIMEOUT_MINUTES);
+
           // If the current time is more than timeoutMinutes after the slot time, remove the slot
           if (now > slotTime) {
             console.log('removing slot: ', reservedSlot, 'for client: ', client.id);
@@ -103,6 +103,37 @@ const App = () => {
         : provider
     ));
   };
+
+  return (
+    <Router>
+      <Switch>
+        <Route path="/login">
+          <Login setUser={setUser} addNewProvider={addNewProvider} addNewClient={addNewClient} userType={userType} />;
+        </Route>
+        <Route path="/">
+          {userType === 'provider' ? (
+            <Provider id={user} schedule={providers.find(provider => provider.id === user).schedule} addProviderAvailability={addProviderAvailability} />
+          ) : (
+            <Client client={clients.find(client => client.id === user)} providers={providers} setProviders={setProviders} reserveSlot={reserveSlot} confirmSlot={confirmSlot} />
+          )}
+        </Route>
+        <Route path="/client">
+          <Client />
+        </Route>
+        <Route path="/usertype">
+          <div className="flex items-center justify-center h-screen bg-gradient-to-b from-gray-100 to-gray-500">
+            <div className="bg-white shadow-xl rounded p-12 mb-4">
+              <h2 className="text-2xl font-bold mb-4 text-center">Are you a provider or a client?</h2>
+              <div className="flex justify-center space-x-4">
+                <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={() => setUserType('provider')}>I'm a Provider</button>
+                <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={() => setUserType('client')}>I'm a Client</button>
+              </div>
+            </div>
+          </div>
+        </Route>
+      </Switch>
+    </Router>
+  );
 
   if (!userType) {
     return (
