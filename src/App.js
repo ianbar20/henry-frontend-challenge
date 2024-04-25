@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import Login from './components/Login/Login';
 import Provider from './components/Provider/Provider';
 import Client from './components/Client/Client';
+import { TIMEOUT_MINUTES } from './constants';
+
 
 // Main App Component
 const App = () => {
@@ -26,7 +28,6 @@ const App = () => {
 
   // check for and delete any expired reserved time slots
   useEffect(() => {
-    const timeoutMinutes = 2;
     const intervalId = setInterval(() => {
       console.log('checking for expired reservations...')
       setClients(prevClients => prevClients.map(client => {
@@ -34,12 +35,11 @@ const App = () => {
         const reservedSlot = client.reservedSlot;
         if (reservedSlot) {
           const slotTime = new Date(reservedSlot.timestamp);
-          slotTime.setMinutes(slotTime.getMinutes() + timeoutMinutes); 
-          console.log('slot, now', slotTime, now)
+          slotTime.setMinutes(slotTime.getMinutes() + TIMEOUT_MINUTES); 
           
           // If the current time is more than timeoutMinutes after the slot time, remove the slot
           if (now > slotTime) {
-            console.log('removing slot')
+            console.log('removing slot: ', reservedSlot, 'for client: ', client.id);
             return { ...client, reservedSlot: null };
           }
         }
@@ -48,8 +48,6 @@ const App = () => {
       }));
     }, 60000); // Check every minute
 
-
-    // TODO this line needed?
     return () => clearInterval(intervalId); // Clean up the interval on unmount
   }, [setClients]);
 
@@ -127,7 +125,7 @@ const App = () => {
   return userType === 'provider' ? (
     <Provider id={user} schedule={providers.find(provider => provider.id === user).schedule} addProviderAvailability={addProviderAvailability} />
   ) : (
-    <Client id={user} providers={providers} setProviders={setProviders} reserveSlot={reserveSlot} confirmSlot={confirmSlot} />
+    <Client client={clients.find(client => client.id === user)} providers={providers} setProviders={setProviders} reserveSlot={reserveSlot} confirmSlot={confirmSlot} />
   );
 };
 

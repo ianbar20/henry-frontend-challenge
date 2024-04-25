@@ -1,15 +1,10 @@
 import TimeDropdown from "../TimeDropdown/TimeDropdown";
-import React, { useState, useEffect } from "react";
-import { formatDate, formatTime, addMinutes } from "../../utils/dateAndTime";
+import React, { useState } from "react";
+import { formatDate, formatTime, addMinutesHHMM, addMinutes } from "../../utils/dateAndTime";
+import { TIMEOUT_MINUTES } from "../../constants";
 
-const Client = ({ id, providers, reserveSlot, confirmSlot }) => {
+const Client = ({ client, providers, reserveSlot, confirmSlot }) => {
   const [selectedSlot, setSelectedSlot] = useState(null);
-  const [reservedSlot, setReservedSlot] = useState(JSON.parse(localStorage.getItem('reservedSlot')) || null);
-
-  useEffect(() => {
-    localStorage.setItem('reservedSlot', JSON.stringify(reservedSlot));
-    console.log('reservedSlot', reservedSlot)
-  }, [reservedSlot]);
 
   const handleTimeSelection = (slot, time) => {
     const now = new Date();
@@ -36,33 +31,31 @@ const Client = ({ id, providers, reserveSlot, confirmSlot }) => {
   };
 
   const handleConfirmButtonClick = () => {
-    confirmSlot(id, reservedSlot);
-    setReservedSlot(null);
+    confirmSlot(client.id, client.reservedSlot);
   };
 
   const handleReserveButtonClick = () => {
     const slotWithTimeStamp = { ...selectedSlot, timestamp: new Date() }
-    reserveSlot(id, slotWithTimeStamp);
-    setReservedSlot(slotWithTimeStamp);
+    reserveSlot(client.id, slotWithTimeStamp);
     setSelectedSlot(null);
   };
 
-  const confirmedSlots = providers.flatMap(provider => provider.confirmedSlots || []).filter(slot => slot.clientId === id);
+  const confirmedSlots = providers.flatMap(provider => provider.confirmedSlots || []).filter(slot => slot.clientId === client.id);
 
   return (
     <div className="flex items-center justify-center h-screen bg-gradient-to-b from-gray-100 to-gray-500">
       <div className="bg-white shadow-xl rounded p-12 mb-4">
-        <h2 className="text-2xl font-bold text-center">Client ID: {id}</h2>
+        <h2 className="text-2xl font-bold text-center">Client ID: {client.id}</h2>
         <h2 className="text-2xl font-bold text-center">Reserve a new time slot</h2>
         <p className='text-sm text-red-500 mb-6 text-center'>please note, time slots must be made at least 24 hours in advance.</p>
-        {reservedSlot &&
+        {client.reservedSlot &&
           <div>
             <h3 className="text-xl font-bold mb-2 mt-8">Reserved time slots:</h3>
             <div className="grid grid-cols-5 gap-4">
-              <span className='pr-6'>Provider ID: {reservedSlot.providerId}</span>
-              <span className='pr-6'>{formatDate(reservedSlot.date)}</span>
-              <span>{formatTime(reservedSlot.time)} - {formatTime(addMinutes(reservedSlot.time, 15))}</span>
-              {reservedSlot.timestamp && <span className='text-red-500'>Expires: {new Date(reservedSlot.timestamp).toLocaleString()}</span>
+              <span className='pr-6'>Provider ID: {client.reservedSlot.providerId}</span>
+              <span className='pr-6'>{formatDate(client.reservedSlot.date)}</span>
+              <span>{formatTime(client.reservedSlot.time)} - {formatTime(addMinutesHHMM(client.reservedSlot.time, 15))}</span>
+              {client.reservedSlot.timestamp && <span className='text-red-500'>Expires: {addMinutes(client.reservedSlot.timestamp, TIMEOUT_MINUTES).toLocaleString()}</span>
               }
               <button className="bg-green-500 hover:bg-green-700 text-white font-bold ml-2 py-2 px-4 mt-2 rounded" onClick={handleConfirmButtonClick}>Confirm</button>
 
@@ -79,7 +72,7 @@ const Client = ({ id, providers, reserveSlot, confirmSlot }) => {
                 <li key={index} className="grid grid-cols-5 gap-4">
                   <span className='pr-6'>Provider ID: {slot.providerId}</span>
                   <span className='pr-6'>{formatDate(slot.date)}</span>
-                  <span>{formatTime(slot.time)} - {formatTime(addMinutes(slot.time, 15))}</span>
+                  <span>{formatTime(slot.time)} - {formatTime(addMinutesHHMM(slot.time, 15))}</span>
                 </li>
               ))}
             </ul>
@@ -115,7 +108,7 @@ const Client = ({ id, providers, reserveSlot, confirmSlot }) => {
         {selectedSlot && (
           <div className="flex flex-col items-center">
             <p className='mt-8 font-bold'>
-              Reserve time slot on {formatDate(selectedSlot.date)} at {selectedSlot.time} with provider {selectedSlot.providerId}?
+            Reserve time slot on {formatDate(selectedSlot.date)} at {formatTime(selectedSlot.time)} with provider {selectedSlot.providerId}?
             </p>
             <button className="bg-green-500 hover:bg-green-700 text-white font-bold ml-2 py-2 px-4 mt-2 rounded" onClick={handleReserveButtonClick}>Reserve</button>
           </div>

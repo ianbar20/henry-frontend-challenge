@@ -1,4 +1,4 @@
-import { formatDate, formatTime, timeToMinutes, addFifteenMinutes, addMinutes } from './dateAndTime';
+import { formatDate, formatTime, timeToMinutes, addFifteenMinutes, addMinutesHHMM } from './dateAndTime';
 
 describe('dateAndTime', () => {
   test('formatDate formats a date string correctly', () => {
@@ -19,9 +19,9 @@ describe('dateAndTime', () => {
     expect(minutes).toBe(555);
   });
 
-  test('addMinutes adds given minutes to a time string correctly', () => {
+  test('addMinutesHHMM adds given minutes to a time string correctly', () => {
     const time = '09:00';
-    const newTime = addMinutes(time, 15);
+    const newTime = addMinutesHHMM(time, 15);
     expect(newTime).toBe('09:15');
   });
 });
