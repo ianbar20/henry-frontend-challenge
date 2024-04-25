@@ -16,7 +16,10 @@ to run tests:
 - Providers must make their availability 24 hours in advance too. It would not make sense to allow the provider to add availability same-day if the client is unable to book less than 24 hours in advance.
 - I chose to list the slots for providers because the task specifically said clients should be able to list available slots. I went with the assumption that seeing all possible slots on one screen is important, rather than selecting a date from a calendar and then seeing available slots.
 - I think a more ideal solution would be similar to restaurant reservation apps. You select a provider, then a date, then a time slot from a bunch of bubbles (maybe)
+NEW
 - Timeout minutes is set as a constant so that it's easy to change if needed. In addition, the reserved slots are stored with the current timestamp rather than the expiry time. This way, if the timeout is ever changed, we do not need to edit the database timestamps.
+- I realize that the timeout in minutes was set incorrectly to 15 minutes
+- In addition, I accidentally did not delete component files before creating individual component directories
 
 ### improvements in later version
 - cleaner UI, spacing, element sizing
