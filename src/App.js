@@ -4,12 +4,17 @@ import Login from './components/Login/Login';
 import Provider from './components/Provider/Provider';
 import Client from './components/Client/Client';
 import { TIMEOUT_MINUTES } from './constants';
+import { useAuth0 } from '@auth0/auth0-react';
+
 
 
 // Main App Component
 const App = () => {
+  console.log(window.location.origin)
+  const { isAuthenticated, user: userId, isLoading } = useAuth0();
+
   const [userType, setUserType] = useState(null); // 'provider' or 'client'
-  const [user, setUser] = useState(null); // user ID
+  // const [userId, setUserId] = useState(null);
   const [providers, setProviders] = useState(() => JSON.parse(localStorage.getItem('providers')) || [
   ]);
   const [clients, setClients] = useState(() => JSON.parse(localStorage.getItem('clients')) || [
@@ -26,6 +31,7 @@ const App = () => {
 
   }, [clients]);
 
+
   // check for and delete any expired reserved time slots
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -35,8 +41,8 @@ const App = () => {
         const reservedSlot = client.reservedSlot;
         if (reservedSlot) {
           const slotTime = new Date(reservedSlot.timestamp);
-          slotTime.setMinutes(slotTime.getMinutes() + TIMEOUT_MINUTES); 
-          
+          slotTime.setMinutes(slotTime.getMinutes() + TIMEOUT_MINUTES);
+
           // If the current time is more than timeoutMinutes after the slot time, remove the slot
           if (now > slotTime) {
             console.log('removing slot: ', reservedSlot, 'for client: ', client.id);
@@ -103,6 +109,23 @@ const App = () => {
         : provider
     ));
   };
+  
+  // add new provider or client based on login information
+useEffect(() => {
+  if (isAuthenticated && userType) {
+    if (userType === 'client') {
+      addNewClient(userId);
+    } else if (userType === 'provider') {
+      addNewProvider(userId);
+    }
+  }
+}, [isAuthenticated, userType, userId, addNewClient, addNewProvider]);
+
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
 
   if (!userType) {
     return (
@@ -117,15 +140,21 @@ const App = () => {
       </div>
     );
   }
-
-  if (!user) {
-    return <Login setUser={setUser} addNewProvider={addNewProvider} addNewClient={addNewClient} userType={userType} />;
+  else if (!isAuthenticated) {
+    return (
+<Login addNewProvider={addNewProvider} addNewClient={addNewClient} userType={userType} />
+    )
   }
 
+
+  // if (!userId) {
+  //   return <Login setUser={setUserId} addNewProvider={addNewProvider} addNewClient={addNewClient} userType={userType} />;
+  // }
+
   return userType === 'provider' ? (
-    <Provider id={user} schedule={providers.find(provider => provider.id === user).schedule} addProviderAvailability={addProviderAvailability} />
+    <Provider id={userId} schedule={providers.find(provider => provider.id === userId).schedule} addProviderAvailability={addProviderAvailability} />
   ) : (
-    <Client client={clients.find(client => client.id === user)} providers={providers} setProviders={setProviders} reserveSlot={reserveSlot} confirmSlot={confirmSlot} />
+    <Client client={clients.find(client => client.id === userId)} providers={providers} setProviders={setProviders} reserveSlot={reserveSlot} confirmSlot={confirmSlot} />
   );
 };
 
