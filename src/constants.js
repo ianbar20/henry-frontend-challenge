@@ -1,1 +1,1 @@
-export const TIMEOUT_MINUTES = 1;
+export const TIMEOUT_MINUTES = 30;
