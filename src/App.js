@@ -26,7 +26,7 @@ const App = () => {
 
   // check for and delete any expired reserved time slots
   useEffect(() => {
-    const timeoutMinutes = 15;
+    const timeoutMinutes = 2;
     const intervalId = setInterval(() => {
       console.log('checking for expired reservations...')
       setClients(prevClients => prevClients.map(client => {
@@ -34,10 +34,12 @@ const App = () => {
         const reservedSlot = client.reservedSlot;
         if (reservedSlot) {
           const slotTime = new Date(reservedSlot.timestamp);
-          slotTime.setMinutes(slotTime.getMinutes() + timeoutMinutes); // Add 30 minutes to the slot time
+          slotTime.setMinutes(slotTime.getMinutes() + timeoutMinutes); 
+          console.log('slot, now', slotTime, now)
           
-          // If the current time is more than 30 minutes after the slot time, remove the slot
+          // If the current time is more than timeoutMinutes after the slot time, remove the slot
           if (now > slotTime) {
+            console.log('removing slot')
             return { ...client, reservedSlot: null };
           }
         }
@@ -46,6 +48,8 @@ const App = () => {
       }));
     }, 60000); // Check every minute
 
+
+    // TODO this line needed?
     return () => clearInterval(intervalId); // Clean up the interval on unmount
   }, [setClients]);
 
