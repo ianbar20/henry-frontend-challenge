@@ -1,8 +1,17 @@
-import { useState } from "react";
-const Login = ({ setUser, addNewProvider, addNewClient, userType }) => {
-  const [id, setId] = useState('');
+// Login.tsx
+import React, { useState, FormEvent } from "react";
 
-  const handleSubmit = (e) => {
+interface LoginProps {
+  setUser: (id: string) => void;
+  addNewProvider: (id: string) => void;
+  addNewClient: (id: string) => void;
+  userType: 'provider' | 'client';
+}
+
+const Login = ({ setUser, addNewProvider, addNewClient, userType }: LoginProps) => {
+  const [id, setId] = useState<string>('');
+
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     setUser(id);
     userType === 'provider' ? addNewProvider(id) : addNewClient(id);
